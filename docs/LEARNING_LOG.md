@@ -28,3 +28,35 @@ This log tracks my daily progress, concepts, and artifacts.
 - **OSI Model Drawing:**  
 ![OSI model drawing](images/osi_drawing.png)  
 *Hand‑drawn OSI model with layers and example devices.*
+
+---
+## [2026-02-16] – Day 2: IP Addressing & Subnetting Basics
+
+### Concept
+- IPv4 structure (network + host), classful vs CIDR, subnet masks.
+- Subnetting formulas: network ID = IP & mask, hosts = 2^(32-mask) - 2.
+
+### Artifact
+- Extended `ip_utils.py` with:
+  - `ip_to_bin()` – converts dotted decimal to 32‑bit binary.
+  - `network_address()` – uses bitwise AND on binary strings.
+  - `broadcast_address()` – OR with inverted mask.
+  - `host_count()` – calculates usable hosts.
+- Created `subnet_calculator.py` that imports these functions and prints results for a hardcoded example.
+
+### Reflection
+- Using string manipulation for bitwise ops is explicit and helps me visualise the process, though later I might switch to integer bitwise for performance.
+- I solved 20 subnetting problems manually – the logic now feels solid.
+
+### Evidence
+- Code committed with message: `Add subnet calculation functions using bitwise operations`
+- Packet Tracer simple LAN:
+  ![Simple LAN ping](images/simple_lab.png)
+- Test output:
+```
+IP: 192.168.1.15
+Mask: 255.255.255.0
+Network address: 192.168.1.0
+Broadcast address: 192.168.1.255
+Usable hosts: 254
+```

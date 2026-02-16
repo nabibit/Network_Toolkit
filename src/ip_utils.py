@@ -60,8 +60,99 @@ def bin_to_dec(binary: str) -> int:
     # int(binary,2) is the stard way to parse binary strings
     return int(binary, 2)
 
-if __name__ == "__main__":
-    # Quick self-test
+def ip_to_bin(ip: str) ->str:
+    """
+    Convert dotted decimal IP to 32-bit binary string.
+    
+    Args:
+        ip: IPv4 address as string (e.g., '192.168.1.1')
+    
+    Returns:
+        32-character binary string
+    
+    Raises:
+        ValueError: If IP format is invalid
+    """
+
+    octets = ip.split('.')
+    if len(octets) != 4:
+        raise ValueError(f"Invalid IP format: {ip}")
+    
+    binary_parts = []
+    for octet in octets:
+        try:
+            val = int(octet)
+            # Reuses dec_to_bin to get 8-bit binary
+            binary_parts.append(dec_to_bin(val))
+        except ValueError:
+            raise ValueError(f"Invalid octet in IP: {octet}")
+    return ''.join(binary_parts)
+    
+def network_address(ip: str, mask: str) -> str:
+    """
+    Calculate network address given IP and subnet mask
+
+    Args:
+        ip: IPv4 address string
+        mask: Subnet mask string (dotted decimal, e.g., '255.255.255.0')
+
+    Returns:
+        Network address as dotted decimal string
+
+    Example:
+        >>> network_address('192.168.1.100', '255.255.255.0')
+        '192.168.1.0'
+ 
+    """
+    ip_bin = ip_to_bin(ip)
+    mask_bin = ip_to_bin(mask) # mask is also an IP-like string
+
+    # Bitwise AND on each bit (as string) - could also convert to int but this is explicit
+    network_bin = ''.join(str(int(ip_bin[i] == '1' and mask_bin[i] == '1')) for i in range(32))
+
+    # Convert back to dotted decimal
+    octets = [str(int(network_bin[i:i+8], 2)) for i in range(0, 32, 8)]
+    return '.'.join(octets)
+
+def broadcast_address(ip: str, mask: str) -> str:
+    """
+    Calculate broadcast address given IP and subnet mask
+    
+    Args:
+        ip: IPv4 address string
+        mask: Subnet mask string
+
+    Returns:
+        Broadcast address as dotted decimal string
+    """
+    ip_bin = ip_to_bin(ip)
+    mask_bin = ip_to_bin(mask)
+
+    # Invert mask for host bits: 0 becomes 1, 1 becomes 0
+    wildcard_bin = ''.join('1' if bit == '0' else '0' for bit in mask_bin)
+
+    # OR ip with wildcard to get broadcast 
+    broadcast_bin = ''.join(str(int(ip_bin[i] == '1' or wildcard_bin[i] == '1')) for i in range(32))
+
+    octets = [str(int(broadcast_bin[i:i+8], 2)) for i in range(0, 32, 8)]
+    return '.'.join(octets)
+
+def host_count(mask: str) -> int:
+    """
+    Calculate number of usable hosts for a given subnet mask
+
+    Args:
+        mask: Subnet mask string (dotted decimal)
+
+    Returns: 
+        Number of usable hosts (2^(32-number of prefix bits) - 2)
+    """
+    mask_bin = ip_to_bin(mask)
+    prefix_len = mask_bin.count('1')
+    return (1 << (32 - prefix_len)) - 2
+    
+if  __name__ == "__main__":
+    #Quick self-test
     test = 192
     bin_str = dec_to_bin(test)
     print(f"{test} -> {bin_str} -> {bin_to_dec(bin_str)}")
