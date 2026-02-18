@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
+# Project: Network Toolkit
+# Purpose: Interactive CLI for calculating subnet details.
+# Created: 2026-02-17
+# Complexity: O(1) - UI wrapper for constant-time math functions.
+
 """
 Interactive Subnet Calculator
 
+Acts as the user interface (CLI) for the ip_utils library.
 Allows user to repeatedly calculate network/broadcats addresses and host counts
 for given IP and subnet mask. Uses ip_utils functions.
 """
@@ -14,13 +20,24 @@ def print_welcome():
     print("Type 'quit' at any prompt to exit.\n")
 
 def get_input(prompt):
-    """Get non-empty input from user, allowing 'quit' to exit."""
+    """Get non-empty input from user, allowing 'quit' to exit.
+
+    Args:
+        prompt: The text to display to the user.
+        
+    Returns:
+        String input from user, or None if they typed 'quit'.
+    """
     user_input = input(prompt).strip()
     if user_input.lower() == 'quit':
         return None
     return user_input
 
 def main():
+    """
+    Main application loop. 
+    Continuously requests input and displays calculated subnet data.
+    """
     print_welcome()
 
     while True:
@@ -49,7 +66,7 @@ def main():
             continue
         
         again = get_input("Another calculation? (y/n): ")
-        if again is None or again.lower() not in('y', 'yes', 'Yes', 'YEs', 'YES'):
+        if again is None or again.lower() not in('y', 'yes'):
             break
 
     print("Goodbye!")

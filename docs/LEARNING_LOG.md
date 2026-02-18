@@ -103,3 +103,33 @@ Usable hosts: 254
 Another calculation? (y/n): n
 Goodbye!
 ```
+
+## [2026-02-18] – Day 4: TCP/UDP & Ports
+
+### Concept
+- Transport layer protocols: TCP (reliable, connection‑oriented) vs UDP (unreliable, connectionless).
+- TCP three‑way handshake: SYN, SYN‑ACK, ACK.
+- Port numbers multiplex connections; well‑known ports (HTTP 80, HTTPS 443, SSH 22, etc.).
+
+### Artifact
+- Wrote `tcp_client.py` – a reusable TCP client function `fetch_http()` that connects to a target, sends an HTTP GET request, and returns the response.
+- Used a context manager and timeout for robustness.
+- Captured a three‑way handshake on loopback (localhost) using Wireshark while connecting to a local HTTP server.
+
+### Reflection
+- Seeing the handshake in Wireshark made the theory concrete: the client sends SYN, server replies SYN‑ACK, client ACKs.
+- The socket API maps directly to these steps: `connect()` triggers the handshake, `send()`/`recv()` transfer data.
+- Debugging the HTTP request (initially got a 400 error) taught me to check the exact request string and line endings.
+
+### Evidence
+- Code committed with message: `Add TCP client with context manager and error handling`
+- Wireshark capture of three‑way handshake on loopback:
+  ![TCP three‑way handshake](images/http_handshake.png)
+- Test output (local server):
+```
+[*] Connecting to 127.0.0.1:8000...
+[+] Success. Received 2660 bytes.
+Response snippet: <!DOCTYPE HTML>
+
+<html lang="en"> <head> <meta charset="utf-8"> <title>Directory listing for /</title> </head> ...
+```
