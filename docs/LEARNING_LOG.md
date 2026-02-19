@@ -133,3 +133,101 @@ Response snippet: <!DOCTYPE HTML>
 
 <html lang="en"> <head> <meta charset="utf-8"> <title>Directory listing for /</title> </head> ...
 ```
+
+## 2026-02-19 – Day 5: VLSM & Static Routing
+
+### Concept
+
+### VLSM (Variable Length Subnet Mask)
+Allows subnetting a network into subnets of different sizes, using the most efficient allocation strategy (largest subnets first).
+
+### Static Routing
+Manually configuring routes on each router.  
+Each router needs entries for networks not directly connected, specifying next-hop IPs on directly connected links.
+
+
+### Artifact
+
+#### 1. VLSM Practice
+
+- Given `192.168.1.0/24`, created subnets of sizes `/26`, `/27`, `/28` manually.
+- Calculated ranges and verified with online tools.
+
+#### 2. Enhanced `subnet_calculator.py`
+- Added **CIDR notation support** (e.g., `192.0.2.15/24`) via `parse_cidr()`.
+- Implemented **first/last usable host calculation** with `get_host_range()` (handles edge cases like /31 and /32).
+- Introduced **command‑line interface** using `argparse` – now can run:
+  ```bash
+  python -m src.subnet_calculator 192.0.2.15/24
+  ```
+
+- Refactored calculation logic into calculate_subnet() returning a dict, and print_results() for consistent output.
+
+- Tested with many examples, including edge cases.
+
+#### 3. Packet Tracer Static Routing Lab
+- Built a three‑router chain (R1–R2–R3) with two end PCs using documentation prefixes:
+
+  - PC1 LAN: 192.0.2.0/24 (R1 G0/0: .1, PC1: .10)
+  - R1–R2 link: 198.51.100.0/30 (R1: .1, R2: .2)
+  - R2–R3 link: 203.0.113.0/30 (R2: .1, R3: .2)
+  - PC2 LAN: 192.0.2.64/26 (R3 G0/1: .65, PC2: .66)
+
+- Configured static routes:
+
+  - R1: `ip route 192.0.2.64 255.255.255.192 198.51.100.2`
+  - R2:
+    `ip route 192.0.2.0 255.255.255.0 198.51.100.1`
+    
+    `ip route 192.0.2.64 255.255.255.192 203.0.113.2`
+
+  - R3: `ip route 192.0.2.0 255.255.255.0 203.0.113.1`
+
+- Verified connectivity: ping from PC1 to PC2 – first packet timed out (ARP), subsequent pings succeeded.
+
+### Reflection
+- VLSM practice highlighted the importance of systematic allocation: always start with the largest subnet, then move to the next available block.
+
+- Enhancing the calculator taught me to separate parsing, calculation, and output – making the code maintainable and testable.
+
+- Static routing lab reinforced how routing tables work. I initially made IP typos on router interfaces, causing routes not to appear; double‑checking interface configurations fixed it.
+
+### Evidence
+Code committed with message:
+Enhance subnet calculator with CIDR, host ranges, and argparse CLI
+
+- Code committed with message:
+`Enhance subnet calculator with CIDR, host ranges, and argparse CLI`
+
+- Subnet calculator test (interactive):
+```python
+=== Advanced Subnet Calculator ===
+Enter target network: 192.0.2.15/24
+
+Results for 192.0.2.15 / 255.255.255.0:
+    Network address:   192.0.2.0
+    Broadcast address: 192.0.2.255
+    First usable host: 192.0.2.1
+    Last usable host:  192.0.2.254
+    Usable hosts:      254
+```
+  - Subnet calculator CLI:
+  ```python 
+  $ python -m src.subnet_calculator 192.0.2.15/24
+Results for 192.0.2.15 / 255.255.255.0:
+    Network address:   192.0.2.0
+    Broadcast address: 192.0.2.255
+    First usable host: 192.0.2.1
+    Last usable host:  192.0.2.254
+    Usable hosts:      254
+```
+- Packet Tracer screenshots:
+  - Topology:
+![Static Routing Topology](images/static_routing_topology.png)
+
+  - Routing tables:
+![Routing Table R1](images/routing_table_R1.png)
+![Routing Table R2](images/routing_table_R2.png)
+![Routing Table R3](images/routing_table_R3.png)
+  - Ping test (first attempt had ARP timeout, second succeeded):
+![Static Routing Ping Test](images/static_routing_ping.png)

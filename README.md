@@ -7,7 +7,8 @@ A collection of Python utilities for network engineers and security students, bu
 - **Binary conversion** – `dec_to_bin()`, `bin_to_dec()` for IP octets.
 - **IP to binary** – `ip_to_bin()` converts dotted decimal to 32‑bit string.
 - **Subnet calculations** – `network_address()`, `broadcast_address()`, `host_count()`.
-- **Interactive subnet calculator** – command‑line tool that lets you repeatedly calculate network details.
+- **Advanced subnet calculator** – interactive and CLI tool that accepts dotted or CIDR notation, outputs network, broadcast, first/last host, and total hosts.
+
 - **TCP client** – `fetch_http()` demonstrates raw socket programming and the three‑way handshake.
 
 
@@ -51,26 +52,28 @@ print(f"Network: {net}")        # Network: 192.168.1.0
 print(f"Broadcast: {bcast}")    # Broadcast: 192.168.1.255
 print(f"Usable hosts: {hosts}") # Usable hosts: 254
 ```
-### Interactive Subnet Calculator
-Run the calculator from the command line:
+### Advanced Subnet Calculator
+Run interactively:
 ```python
 python -m src.subnet_calculator
 ```
-You'll be prompted to enter an IP and subnet mask. Type quit at any prompt to exit.
+Supports both dotted (e.g., `192.0.2.15 255.255.255.0`) and CIDR (e.g., `192.0.2.15/24`) input.
 
 ### Example session:
 ```python
-=== Subnet Calculator ===
-Enter IP address (e.g., 192.168.1.15): 192.168.1.15
-Enter subnet mask (e.g., 255.255.255.0): 255.255.255.0
+=== Advanced Subnet Calculator ===
+Enter target network: 192.0.2.15/24
 
-Results for 192.168.1.15 / 255.255.255.0:
-  Network address:   192.168.1.0
-  Broadcast address: 192.168.1.255
-  Usable hosts:      254
-
-Another calculation? (y/n): n
-Goodbye!
+Results for 192.0.2.15 / 255.255.255.0:
+    Network address:   192.0.2.0
+    Broadcast address: 192.0.2.255
+    First usable host: 192.0.2.1
+    Last usable host:  192.0.2.254
+    Usable hosts:      254
+```
+For quick one‑off calculations, use CLI mode:
+```python
+python -m src.subnet_calculator 192.0.2.15/24
 ```
 
 ## TCP Client (Safe Local Test)
@@ -86,16 +89,27 @@ To observe a three‑way handshake locally:
 Each module includes a self-test when run directly. For example:
 
 ```bash
-python src/ip_utils.py        # runs quick binary conversion test
-python src/subnet_calculator.py  # starts interactive tool
-python src/tcp_client.py      # connects to local server (if running)
+# Test binary conversion utilities
+python src/ip_utils.py
+# Expected output: 192 -> 11000000 -> 192
+
+# Start the interactive subnet calculator
+python src/subnet_calculator.py
+
+# Test TCP client (requires local server on port 8000)
+python src/tcp_client.py
+# Expected output: [*] Connecting to 127.0.0.1:8000... 
+# [+] Success. Received X bytes.
 ```
+
 ### You can also write your own test scripts using the imported functions – they’re designed to be reusable and reliable.
 
 
 
 ## Documentation
 See docs/LEARNING_LOG.md for the detailed engineering journal, including Packet Tracer labs and Wireshark captures.
+
+The log tracks daily progress, concepts, artifacts, and reflections – from binary conversion to static routing.
 
 ## Acknowledgements
 Built while studying *Computer Networking: A Top‑Down Approach* (Kurose & Ross)*, *Python Crash Course* (Matthes) and *Practical Packet Analysis (3rd ed.)* (Chris Sanders).
