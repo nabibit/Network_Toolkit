@@ -2,6 +2,18 @@
 
 A collection of Python utilities for network engineers and security students, built as part of my self‑study for the cybersecurity market.
 
+## Table of Contents
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [As a Python Library](#as-a-python-library)
+  - [Advanced Subnet Calculator](#advanced-subnet-calculator)
+  - [TCP Client (Safe Local Test)](#tcp-client-safe-local-test)
+- [Testing the Tools](#testing-the-tools)
+- [Documentation](#documentation)
+- [Week 1 Summary](#week-1-summary)
+- [Acknowledgements](#acknowledgements)
+
 ## Current Features
 
 - **Binary conversion** – `dec_to_bin()`, `bin_to_dec()` for IP octets.
@@ -26,7 +38,7 @@ pip install -r requirements.txt
 ### As a Python Library
 Import the functions you need from `src.ip_utils`:
 
-```bash
+```python
 from src.ip_utils import (
     dec_to_bin,
     bin_to_dec,
@@ -60,7 +72,7 @@ python -m src.subnet_calculator
 Supports both dotted (e.g., `192.0.2.15 255.255.255.0`) and CIDR (e.g., `192.0.2.15/24`) input.
 
 ### Example session:
-```python
+```
 === Advanced Subnet Calculator ===
 Enter target network: 192.0.2.15/24
 
@@ -110,6 +122,10 @@ python src/tcp_client.py
 See docs/LEARNING_LOG.md for the detailed engineering journal, including Packet Tracer labs and Wireshark captures.
 
 The log tracks daily progress, concepts, artifacts, and reflections – from binary conversion to static routing.
+
+## Week 1 Summary
+
+In Week 1, I built the foundation of my Network Toolkit. Starting from binary conversions, I developed a suite of subnet calculation tools, an interactive subnet calculator with CLI support, and a TCP client that demonstrates the three‑way handshake. Along the way, I reinforced theory with Packet Tracer labs (simple LAN, two subnets, static routing) and Wireshark captures (ARP, ICMP, TCP handshake). The learning log documents my daily progress, reflections, and evidence. This week established a solid understanding of networking fundamentals and Python automation – ready for Week 2's deeper dives into scanning and security tools.
 
 ## Acknowledgements
 Built while studying *Computer Networking: A Top‑Down Approach* (Kurose & Ross)*, *Python Crash Course* (Matthes) and *Practical Packet Analysis (3rd ed.)* (Chris Sanders).

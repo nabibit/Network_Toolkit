@@ -6,7 +6,7 @@
 
 """
 Basic TCP client implementation.
-Demonstarates raw socket manipulation and TCP 3-way handshake.
+Demonstrates raw socket manipulation and TCP 3-way handshake.
 """
 
 import socket
@@ -42,12 +42,12 @@ def fetch_http(target:str, port: int) ->str:
 
             # Send HTTP GET request
             # 'Connection: close' ensures server terminates stream after sending data
-            request = f"GET / HTTP/1.1\r\n Host: {target}\r\n Connection: close\r\n\r\n"
+            request = f"GET / HTTP/1.1\r\nHost: {target}\r\nConnection: close\r\n\r\n"
             client.send(request.encode())
 
-            # Receive response (4096 bytes is standrad buffer size)
-            respone = client.recv(4096)
-            return respone.decode(errors='replace')
+            # Receive response (4096 bytes is standard buffer size)
+            response = client.recv(4096)
+            return response.decode(errors='replace')
  
         except (socket.timeout, ConnectionRefusedError, OSError) as e:
             raise ConnectionError(f"Failed to connect to {target}:{port} - {e}")
@@ -61,6 +61,6 @@ if __name__ == "__main__":
     try:
         data = fetch_http(target, port)
         print(f"[+] Success. Received {len(data)} bytes.")
-        print(f"Response snippet: {data}...")
+        print(f"Response snippet: {data[:200]}...")
     except ConnectionError as e:
         print(f"[-] Test failed: {e}")

@@ -32,13 +32,13 @@ def dec_to_bin(octet: int) -> str:
         raise ValueError(f"Octet must be 0-255, got {octet}")
     
     # bin() gives '0b' prefix; slice off prefix and pad to 8 bits
-    # Padding is crtical because IP maths expects full octets
+    # Padding is critical because IP maths expects full octets
     return bin(octet)[2:].zfill(8)
 
 def bin_to_dec(binary: str) -> int:
     
     """
-    Convert 8=bit binary string to decimal integer.
+    Convert 8-bit binary string to decimal integer.
 
     Args:
         binary: String of 8 characters, each '0' or '1'.
@@ -57,7 +57,7 @@ def bin_to_dec(binary: str) -> int:
     if len(binary) != 8 or not all(c in '01' for c in binary):
         raise ValueError("Binary must be 8 bits of 0/1")
     
-    # int(binary,2) is the stard way to parse binary strings
+    # int(binary,2) is the standard way to parse binary strings
     return int(binary, 2)
 
 def ip_to_bin(ip: str) ->str:

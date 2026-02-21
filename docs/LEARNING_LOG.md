@@ -231,3 +231,27 @@ Results for 192.0.2.15 / 255.255.255.0:
 ![Routing Table R3](images/routing_table_R3.png)
   - Ping test (first attempt had ARP timeout, second succeeded):
 ![Static Routing Ping Test](images/static_routing_ping.png)
+
+## [2026-02-20] – Day 6: Review, Test & Polish
+
+### Concept
+- Cumulative review of OSI model, subnetting, TCP handshake.
+- Identifying and strengthening weak topics.
+- Preparing the repository for public portfolio.
+
+### Artifact
+- No new code – focused on verification and documentation.
+- Ran all scripts, confirmed they work.
+- Updated README with Table of Contents and Week 1 summary.
+- Verified all screenshots render correctly.
+- Reviewed and polished code comments (fixed typos in ip_utils, tcp_client, subnet_calculator).
+
+### Reflection
+- Drawing OSI and TCP/IP models from memory helped lock the layers.
+- Subnetting problems exposed a few lingering off‑by‑one errors – more practice helped.
+- The practice assessment showed I need to review UDP header format – added Anki cards.
+- Polishing the repo made me realise how much I've built in just one week. The structure is solid and ready for Week 2.
+
+### Evidence
+- Final commit: `docs: Final polish – add TOC, Week 1 summary, and verify screenshots`
+- Updated README reflects all features and includes a summary.

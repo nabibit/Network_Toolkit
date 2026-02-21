@@ -10,7 +10,7 @@ Advanced Subnet Calculator Module.
 Acts as the user interface (CLI) for the ip_utils library.
 Provides both an interactive REPL and a command-line interface (CLI) for
 calculating subnet boundaries, broadcast addresses, and host ranges.
-Support both dotted-decimal, and CIDR notation.
+Support both dotted-decimal and CIDR notation.
 """
 import argparse
 import sys
@@ -31,7 +31,7 @@ def parse_cidr(cidr: str) -> tuple[str, str]:
         prefix = int(prefix_str)
 
         if not 0 <= prefix <= 32:
-            raise ValueError(f"Cidr prefix must be between 0 and 32, got {prefix}")
+            raise ValueError(f"CIDR prefix must be between 0 and 32, got {prefix}")
         
         # Generate the 32-bit binary mask string
         mask_bin = '1' * prefix + '0' * (32 - prefix)
@@ -129,7 +129,7 @@ def interactive_mode():
             print_results(results)
         
         except ValueError as e:
-            print(f"[!] Erros: {e}\n")
+            print(f"[!] Error: {e}\n")
 
 def cli_mode():
     """Command-line execution mode using argparse."""
@@ -139,7 +139,7 @@ def cli_mode():
     # and avoid issues in shell string parsing.
     parser.add_argument(
         "cidr",
-        help="Target netwrok in CIDR notation (e.g., 10.0.0.0/24)"
+        help="Target network in CIDR notation (e.g., 10.0.0.0/24)"
     )
 
     args = parser.parse_args()
