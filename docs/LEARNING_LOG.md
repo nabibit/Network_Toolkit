@@ -255,3 +255,52 @@ Results for 192.0.2.15 / 255.255.255.0:
 ### Evidence
 - Final commit: `docs: Final polish – add TOC, Week 1 summary, and verify screenshots`
 - Updated README reflects all features and includes a summary.
+
+## [2026-02-21] – Day 7: Real‑World Exploration & Week 2 Prep
+
+### Concept
+- Seeing how packets traverse the internet (traceroute).
+- DNS resolution and mail exchanger lookup (nslookup).
+- Installing tools for network scanning (Nmap, Scapy).
+
+### Artifact
+- Ran `tracert google.com` (IPv6 path, sanitized below).
+- Looked up IP ownership using `lookup.icann.org` - early hops belong to my ISP, later ones to Google.
+- Used `nslookup` to resolve google.com and query its MX records.
+- Installed Nmap and Scapy to prepare for next week’s labs.
+
+### Traceroute Output 
+
+```
+1 2 ms 1 ms 2 ms [my home router]
+2 13 ms 6 ms 6 ms [ISP router 1]
+3 21 ms 5 ms 6 ms [ISP router 2]
+4 * * * Request timed out.
+5 76 ms 50 ms 95 ms [ISP router 3]
+6 * * * Request timed out.
+7 119 ms 102 ms 98 ms 2a00:1450:80a0::1
+8 114 ms 101 ms 100 ms 2001:4860:0:1::e92
+9 115 ms 101 ms 100 ms 2001:4860:0:1::628b
+10 110 ms 101 ms 99 ms lcbuda-an-in-x0e.1e100.net [2a00:1450:400d:803::200e]
+```
+
+
+### IP Lookup Results
+- `2a00:1450:80a0::1` → belongs to **Google LLC** (Google’s infrastructure).
+- `2a00:1450:400d:803::200e` → also **Google LLC**, the destination server.
+
+### nslookup Example
+
+```
+nslookup google.com
+Addresses: 2a00:1450:400d:802::200e
+142.251.140.78
+nslookup -type=MX google.com
+google.com MX preference = 10, mail exchanger = smtp.google.com
+```
+
+
+### Reflection
+- Traceroute reveals the path is not direct – packets traverse multiple ISP routers before reaching Google’s network. Timeouts at certain hops are normal; those routers are configured not to reply.
+- `lookup.icann` lookups confirm that the infrastructure is operated by different organisations: my local ISP handles the first few hops, then hands off to Google’s own backbone.
+- DNS is distributed – `nslookup` returned both IPv4 and IPv6 addresses for Google, showing how a single domain can have multiple IPs for load balancing and redundancy. The MX record points to Google’s mail servers, confirming they handle their own email.

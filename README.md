@@ -128,4 +128,4 @@ The log tracks daily progress, concepts, artifacts, and reflections – from bin
 In Week 1, I built the foundation of my Network Toolkit. Starting from binary conversions, I developed a suite of subnet calculation tools, an interactive subnet calculator with CLI support, and a TCP client that demonstrates the three‑way handshake. Along the way, I reinforced theory with Packet Tracer labs (simple LAN, two subnets, static routing) and Wireshark captures (ARP, ICMP, TCP handshake). The learning log documents my daily progress, reflections, and evidence. This week established a solid understanding of networking fundamentals and Python automation – ready for Week 2's deeper dives into scanning and security tools.
 
 ## Acknowledgements
-Built while studying *Computer Networking: A Top‑Down Approach* (Kurose & Ross)*, *Python Crash Course* (Matthes) and *Practical Packet Analysis (3rd ed.)* (Chris Sanders).
+Built while studying *Computer Networking: A Top‑Down Approach* (Kurose & Ross), *Python Crash Course* (Matthes) and *Practical Packet Analysis (3rd ed.)* (Chris Sanders).
