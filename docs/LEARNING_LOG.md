@@ -304,3 +304,42 @@ google.com MX preference = 10, mail exchanger = smtp.google.com
 - Traceroute reveals the path is not direct – packets traverse multiple ISP routers before reaching Google’s network. Timeouts at certain hops are normal; those routers are configured not to reply.
 - `lookup.icann` lookups confirm that the infrastructure is operated by different organisations: my local ISP handles the first few hops, then hands off to Google’s own backbone.
 - DNS is distributed – `nslookup` returned both IPv4 and IPv6 addresses for Google, showing how a single domain can have multiple IPs for load balancing and redundancy. The MX record points to Google’s mail servers, confirming they handle their own email.
+
+## [2026-02-22] – Day 8: Ping Sweeper & Network Architecture
+
+### Concept
+- **Review & Subnetting:** Drew OSI/TCP models from memory; explained TCP 3‑way handshake out loud. Solved 30 mixed subnetting problems (including VLSM) – verified with calculator.
+- **Python Ping Sweeper:** Used `subprocess`, `ipaddress`, `platform` to create a cross‑platform host discovery tool. Live progress indicator with percentage.
+- **Network Architecture (Limoncelli Ch7):** Clean design, topologies (star, mesh), documentation importance.
+
+### Chapter 7 Summary (Limoncelli)
+
+- **OSI Model:** The OSI model is a conceptual framework that standardises network communication into seven layers, each with specific functions. It helps engineers troubleshoot by isolating problems to a specific layer – for example, a physical cable issue (Layer 1) vs. an IP addressing misconfiguration (Layer 3).
+
+- **Clean Architecture:** Limoncelli describes clean network architecture as designs that are predictable, modular, and easy to document. This means avoiding unnecessary complexity, using consistent IP addressing schemes, and ensuring that changes in one part don't break others. My Packet Tracer labs follow this by keeping subnets organised and using documentation prefixes.
+
+- **Network Topologies:** 
+  - **Star:** All devices connect to a central switch – used in my simple LAN lab.
+  - **Mesh:** Devices interconnect redundantly – my static routing lab is a partial mesh (chain).
+  - **Bus:** Old coaxial Ethernet – rarely used today.
+  - **Ring:** Each device connects to two neighbours – FDDI networks historically.
+  
+  *Real‑world example:* My home network uses a star topology – all devices connect to a central router/switch combo.
+
+### Logical Topology Description
+
+The drawing shows two of my Week 1 Packet Tracer labs. On the left, the simple LAN with three PCs (192.168.1.10, .11, .12) connected to a switch – a star topology. On the right, the two‑subnet lab: a router connects two switches, each with its own subnet (192.168.1.0/24 and 192.168.2.0/24). The router interfaces are labelled as gateways (.1 on each subnet). This is a Layer 3 (logical) diagram because it focuses on IP subnets and routing, not physical cable placement.
+
+![Logical Topology Drawing](images/topology_drawing.jpg)
+
+### Artifact
+- Created `src/scanners/ping_sweeper.py` – cross‑platform ping sweep with progress bar and result storage.
+- Drew logical topologies of Week 1 Packet Tracer labs (simple LAN, two subnets with router) – saved as `docs/images/topology_drawing.jpg`.
+
+### Reflection
+- **Ping sweeper:** The `platform` detection was essential – Windows uses milliseconds, Unix uses seconds. The progress bar (`\r`) made the tool feel professional; storing results in a dict prepares for later CSV/JSON export.
+- **Network Architecture:** Limoncelli’s insistence on documentation validated my learning log approach. The topology drawing helped me visualise the difference between physical and logical design.
+- **Subnetting:** Still catching occasional off‑by‑one errors – more practice needed, but speed is improving.
+
+### Evidence
+- Code committed: `Add cross‑platform ping sweeper with progress indicator`.

@@ -23,6 +23,8 @@ A collection of Python utilities for network engineers and security students, bu
 
 - **TCP client** – `fetch_http()` demonstrates raw socket programming and the three‑way handshake.
 
+- **Ping sweeper** – cross‑platform tool (`ping_sweeper.py`) to discover live hosts on a network. Includes live progress indicator and result storage.
+
 
 ## Installation
 
@@ -96,6 +98,15 @@ To observe a three‑way handshake locally:
 2. In another terminal, run: `python -m src.tcp_client`
 
 3. Capture the loopback interface in Wireshark to see the handshake.
+
+### Ping Sweeper
+Discover live hosts on a network using ICMP ping. Automatically detects your operating system and uses the correct ping flags.
+
+```bash
+python -m src.scanners.ping_sweeper
+```
+
+By default, the script scans `192.168.1.0/24`. To scan a different network, modify the network_str variable in the main() function. Output shows live hosts with a real‑time progress percentage.
 
 ## Testing the Tools
 Each module includes a self-test when run directly. For example:
