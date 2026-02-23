@@ -343,3 +343,131 @@ The drawing shows two of my Week 1 Packet Tracer labs. On the left, the simple L
 
 ### Evidence
 - Code committed: `Add cross‑platform ping sweeper with progress indicator`.
+
+## [2026-02-23] – Day 9: Nmap Introduction & Port Scanning
+
+---
+
+## Concept
+
+- **Nmap Basics:** Learned the difference between ping sweep (`-sn`) and port scanning (`-p`).
+- **Scan Types:** TCP SYN scan (default for privileged users) vs TCP connect scan (for unprivileged users).
+- **Port States:**
+  - **open** → service is listening
+  - **closed** → no service, responds with RST
+  - **filtered** → firewall/ACL blocking the probe
+- **Reading:** Lyon Ch1 (Introduction), Ch3 (Port Scanning Basics), sections 1.1–1.3, 3.1–3.2, 3.5.
+
+---
+
+## Artifact
+
+### 1️⃣ Ping Sweep – Discover Live Hosts
+
+```bash
+nmap -sn 192.168.X.0/24
+```
+**Output:**
+
+```text
+Starting Nmap 7.98 ( https://nmap.org ) at 2026-02-24 00:52
+Nmap scan report for 192.168.X.1
+Host is up (0.029s latency).
+MAC Address: AA:BB:CC:XX:XX:XX (Router Vendor)
+
+Nmap scan report for 192.168.X.128
+Host is up (0.085s latency).
+MAC Address: XX:XX:XX:XX:XX:XX (Unknown)
+
+Nmap scan report for 192.168.X.132
+Host is up (0.13s latency).
+MAC Address: XX:XX:XX:XX:XX:XX (Unknown)
+
+Nmap scan report for 192.168.X.135
+Host is up (0.13s latency).
+MAC Address: XX:XX:XX:XX:XX:XX (Unknown)
+
+Nmap scan report for 192.168.X.136
+Host is up (0.15s latency).
+MAC Address: XX:XX:XX:XX:XX:XX (Device Vendor)
+
+Nmap scan report for 192.168.X.131
+Host is up.
+
+Nmap done: 256 IP addresses (6 hosts up) scanned in 5.25 seconds
+```
+
+### 2️⃣ Port Scan – Router (Ports 1–1000)
+
+Output
+```text
+Starting Nmap 7.98 ( https://nmap.org ) at 2026-02-24 00:53
+Nmap scan report for 192.168.X.1
+Host is up (0.022s latency).
+Not shown: 997 filtered tcp ports (no-response)
+
+PORT    STATE     SERVICE
+53/tcp  open      domain
+80/tcp  open      http
+443/tcp open      https
+
+MAC Address: AA:BB:CC:XX:XX:XX (Router Vendor)
+
+Nmap done: 1 IP address (1 host up) scanned in 7.66 seconds
+```
+
+### Limoncelli Ch10 Notes (Disaster Recovery)
+- **Disaster definition:** Any event that makes a service unavailable (not just natural disasters).
+- **Risk analysis:** Identify threats, vulnerabilities, and impact.
+- **Data integrity:** Ensuring data is correct and consistent – backups, checksums, etc.
+
+## Reflection
+
+### 🔎 Ping Sweep (`-sn`)
+
+- Found **6 live hosts** on my network.
+- `.1` is the router; others are local devices.
+- Nmap uses:
+  - ICMP echo request
+  - TCP SYN to port 443
+  - TCP ACK to port 80
+- Even if ICMP is blocked, hosts may still appear if they respond to TCP probes.
+
+---
+
+### 🔐 Port Scan
+
+**Open ports:**
+
+- 53 (DNS)
+- 80 (HTTP)
+- 443 (HTTPS)
+
+- 997 ports reported as **filtered**.
+- Likely due to the router firewall silently dropping packets instead of sending RST.
+- This improves security by reducing information leakage.
+
+---
+
+### 🛡 OpSec
+
+**Sanitised output:**
+
+- Replaced real IPs with `192.168.X.X`
+- Masked MAC addresses
+- Removed vendor identifiers
+
+Maintains privacy while preserving technical validity.
+
+---
+
+### 📖 Reading Notes
+
+- SYN scan requires raw sockets → root privileges on Unix.
+- Connect scan uses full TCP handshake → works without privileges.
+- "Filtered" means Nmap cannot determine state because packets are dropped.
+
+### Evidence
+- Nmap commands executed and outputs logged above.
+- Screenshots saved in `docs/images/` (sanitised).
+- Limoncelli Chapter 10 notes added.
