@@ -25,6 +25,8 @@ A collection of Python utilities for network engineers and security students, bu
 
 - **Ping sweeper** – cross‑platform tool (`ping_sweeper.py`) to discover live hosts on a network. Includes live progress indicator and result storage.
 
+- **Ping sweeper** – `ping_sweeper.py` discovers live hosts on a network using system ping. Supports CIDR input via `--network` argument, stores results in a dictionary, and prints a summary.
+
 
 ## Installation
 
@@ -123,6 +125,8 @@ python src/subnet_calculator.py
 python src/tcp_client.py
 # Expected output: [*] Connecting to 127.0.0.1:8000... 
 # [+] Success. Received X bytes.
+
+python src/scanners/ping_sweeper.py --network 192.168.1.0/24
 ```
 
 ### You can also write your own test scripts using the imported functions – they’re designed to be reusable and reliable.

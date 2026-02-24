@@ -471,3 +471,69 @@ Maintains privacy while preserving technical validity.
 - Nmap commands executed and outputs logged above.
 - Screenshots saved in `docs/images/` (sanitised).
 - Limoncelli Chapter 10 notes added.
+
+## [2026-02-25] – Day 10: Ping Sweeper Improvements & VLAN Lab
+
+### Concept
+- **Ping sweeper enhancements:** Using `argparse` to accept network ranges, storing results in a dictionary, printing summary, and adding error handling makes the tool more flexible and robust.
+- **VLANs:** Logical segmentation of a switch into multiple broadcast domains. Hosts in the same VLAN can communicate at Layer 2; hosts in different VLANs need a Layer 3 device (router) to communicate.
+- **Router‑on‑a‑stick:** A single router interface with 802.1Q trunking and subinterfaces routes between VLANs.
+
+### Artifact
+#### 1. Ping Sweeper Improvements (`ping_sweeper.py`)
+- Added `argparse` to accept `--network` (default `192.168.1.0/24`).
+- Store results in a dictionary `{ip: status}`.
+- Print a summary: number of hosts up and down.
+
+**Key code addition:**
+```python
+import argparse
+
+parser = argparse.ArgumentParser(description='Ping sweep a network.')
+parser.add_argument('--network', default='192.168.1.0/24', help='Network in CIDR notation')
+args = parser.parse_args()
+network_str = args.network
+```
+
+#### 2. VLAN Lab (Packet Tracer)
+- Built a 2960 switch with four PCs.
+- Created VLAN 10 (Sales) and VLAN 20 (Engineering).
+- Assigned PC1, PC2 to VLAN 10; PC3, PC4 to VLAN 20.
+- Verified intra‑VLAN connectivity and inter‑VLAN failure.
+- Added a 2911 router with subinterfaces (`.10` and `.20`) and trunk port on the switch.
+- Verified inter‑VLAN routing success.
+
+**Key switch commands:**
+```
+vlan 10
+ name Sales
+vlan 20
+ name Engineering
+interface fa0/1
+ switchport mode access
+ switchport access vlan 10
+! ... similar for other ports
+interface fa0/5
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20
+```
+
+**Key router commands:**
+```
+interface g0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.1 255.255.255.0
+interface g0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.20.1 255.255.255.0
+```
+
+### Reflection
+- The ping sweeper improvements make the script reusable for different networks and more user‑friendly. Storing results in a dictionary allows for later analysis (e.g., saving to a file).
+- The VLAN lab clearly demonstrated that VLANs isolate traffic at Layer 2. Without a router, pings to different VLANs failed completely.
+- Adding the router with a trunk and subinterfaces (router‑on‑a‑stick) successfully enabled communication between VLANs. The first ping after configuration timed out (ARP), but subsequent pings succeeded.
+- Understanding the difference between access ports (single VLAN) and trunk ports (multiple tagged VLANs) is essential for network design.
+
+### Screenshots![VLAN Topology](images/vlans_topology.png)
+![Ping within VLAN 10 before routing](images/vlan_before_routing.png)
+![Cross‑VLAN ping after router](images/vlan_after_routing.png)
