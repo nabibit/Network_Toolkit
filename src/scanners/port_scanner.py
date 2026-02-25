@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 # Project: Network Toolkit
-# Purpose: TCP port scanner to discover open ports on a target.
+# Purpose: Multithreaded TCP port scanner with CSV export capabilities.
 # Created: 2026-02-25
-# Complexity: O(N) where n is the number of ports scanned.
+# Complexity: O(N/T) where N is ports and T is threads, Space O(N) for the queue.
 
 """
-TCP Port Scanner Module.
-We implement a simple TCP connect scanner to identify open ports on a target host.
+Multithreaded TCP Port Scanner Module.
+We implement a threaded worker queue to scan target ports concurrently,
+drastically reducing scan times, and provide a CSV export for reporting.
 """
 
 import socket
 import sys
 import argparse
+import csv
+import threading
+from queue import Queue 
 from datetime import datetime
 from typing import List
 
@@ -41,16 +45,21 @@ def scan_port(ip: str, port: int) -> bool:
         # We catch any low-level socket errors and assume the port is inaccessible.
         return False
     
-def scan_target(ip: str, ports: List[int]) -> List[int]:
+def scan_worker(ip: str, port_queue: Queue, open_ports: List[int]) -> None:
     """
-    We iterate through a list of ports to scan the target IP.
+    We process ports from the queue concurrently.
+    Each thread pulls a port from the queue, scans it, and logs it if open.
     """
-    open_ports = []
-    for port in ports:
+    while not port_queue.empty():
+        # We retrieve the next port number from the thread-safe queue.
+        port = port_queue.get()
+
         if scan_port(ip, port):
             open_ports.append(port)
             print(f"[+] Port {port} is OPEN")
-    return open_ports
+
+        # We signal to the queue that the processing for this specific task is complete.
+        port_queue.task_done()
     
 # ---------------------------------------------------
 # Local Test Area & CLI
@@ -61,6 +70,10 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--ports",
                         default = "21, 22, 23, 25, 53, 80, 110, 111, 135, 139, 143, 443, 993, 995, 1723, 3306, 3389, 5900, 8080",
                         help= "Comma-separated ports to scan (default: common ports)")
+    parser.add_argument("-o", "--output",
+                        help="Output file to save results (e.g., results.csv)")
+    parser.add_argument("-t", "--threads", type=int, default=50,
+                        help="Number of concurrent threads (default: 50)")
     args = parser.parse_args()
 
     try:
@@ -73,7 +86,37 @@ if __name__ == "__main__":
     print(f"[*] Scanning {args.target} at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"[*] Ports to scan: {ports_to_scan}\n")
 
-    # We execute the scan against the target using the parsed arguments.
-    found_ports = scan_target(args.target, ports_to_scan)
+    # We initialize the thread-safe queue and populate it with our target ports.
+    port_queue = Queue()
+    for port in ports_to_scan:
+        port_queue.put(port)
 
-    print(f"\n[*] Scan completed. Open ports: {found_ports}")
+    open_ports = []
+    threads = []
+
+    # We spawn the specified number of worker threads
+    for _ in range(args.threads):
+        t = threading.Thread(target=scan_worker, args=(args.target, port_queue, open_ports))
+        t.daemon = True
+        t.start()
+        threads.append(t)
+
+    # We block the main thread until the queue is completely empty
+    port_queue.join()
+
+    # We sort the final list so the output is sequentially redable
+    open_ports.sort()
+    print(f"\n[*] Scan completed. Open ports: {open_ports}")
+
+    # We handle the optional CSV export if requested by the user
+    if args.output:
+        try:
+            with open(args.output, mode='w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(["Target", "Port", "Status"])
+                for p in open_ports:
+                    writer.writerow([args.target, p, "OPEN"])
+            print(f"[*] results saved to {args.output}")
+
+        except Exception as e:
+            print(f"[!] We encountered an error writing to CSV: {e}")
