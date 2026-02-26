@@ -594,3 +594,132 @@ $ python src/scanners/port_scanner.py scanme.nmap.org -p 22,80,443 -t 50 -o resu
 [] Scan completed. Open ports: [22, 80]
 [] results saved to results.csv
 ```
+
+## [2026-02-26] – Day 12: Nmap Scripting Engine (NSE) Exploration
+
+### Concepts Mastered
+
+- **NSE Categories:**  
+  Scripts are grouped by purpose (safe, intrusive, discovery, vuln, exploit, etc.). Running `nmap --script-help all` reveals each script's category – useful for choosing appropriate scripts during assessments.
+
+- **Script Usage:**
+  - `http-title` retrieves webpage titles, identifying web services.
+  - `dns-brute` attempts to discover subdomains via brute-force.
+  - `whois-domain` queries WHOIS records for domain registration details.
+
+- **Windows Adaptation:**  
+  Used PowerShell's `Select-String Categories` to filter output, since `grep` is not native to Windows.
+
+---
+
+### Artifacts
+
+- Ran NSE scripts against `scanme.nmap.org` (legitimate test target).
+- Commands and outputs documented below.
+- (Optional) Saved screenshots of output if desired; not necessary for this log.
+
+---
+
+### NSE Script Results
+
+#### 1. Listing Script Categories (Filtered)
+
+```powershell
+nmap --script-help all | Select-String Categories
+```
+
+Partial output:
+
+```
+Categories: safe discovery
+Categories: default safe
+Categories: intrusive brute
+Categories: discovery safe
+Categories: exploit intrusive vuln
+... (hundreds of lines)
+```
+
+This confirmed the wide variety of script categories available.
+
+---
+
+#### 2. HTTP Title Discovery
+
+```bash
+nmap --script http-title scanme.nmap.org
+```
+
+Output snippet:
+
+```
+PORT      STATE    SERVICE
+22/tcp    open     ssh
+80/tcp    open     http
+|_http-title: Go ahead and ScanMe!
+```
+
+The script accurately identified the web page title, confirming the HTTP service.
+
+---
+
+#### 3. DNS Brute-Force Subdomain Discovery
+
+```bash
+nmap --script dns-brute scanme.nmap.org
+```
+
+Output snippet:
+
+```
+Host script results:
+| dns-brute:
+|   DNS Brute-force hostnames:
+|     chat.nmap.org - 45.33.32.156
+|     chat.nmap.org - 2600:3c01::f03c:91ff:fe18:bb2f
+|     *A: 50.116.1.184
+|_    *AAAA: 2600:3c01:e000:3e6::6d4e:7061
+```
+
+This revealed additional subdomains (e.g., `chat.nmap.org`) and their IPs, demonstrating how DNS brute-forcing can expand the attack surface.
+
+---
+
+#### 4. WHOIS Domain Lookup
+
+```bash
+nmap --script whois-domain scanme.nmap.org
+```
+
+Output snippet (first run took ~60 seconds, second ~74 seconds):
+
+```
+Nmap done: 1 IP address (1 host up) scanned in 61.41 seconds
+```
+
+The script output (not shown) would contain registration details. The delay indicates it is a time-intensive script.
+
+---
+
+### Reflection
+
+NSE transforms Nmap from a simple port scanner into a full-fledged reconnaissance framework.
+
+- The `http-title` script instantly confirms web services.
+- `dns-brute` can uncover hidden subdomains.
+- `whois-domain` provides ownership intelligence.
+
+Understanding script categories is crucial:  
+- **Safe scripts** are unlikely to crash services.  
+- **Intrusive scripts** may be disruptive – choose accordingly for production environments.
+
+On Windows, learning to use `Select-String` (PowerShell) as a `grep` alternative is a practical adaptation.
+
+The `whois-domain` script took over a minute – a reminder that some scans are time-consuming and should be used judiciously.
+
+---
+
+### Evidence
+
+Commands executed and outputs documented above.
+
+---
