@@ -27,6 +27,8 @@ A collection of Python utilities for network engineers and security students, bu
 
 - **Ping sweeper** – `ping_sweeper.py` discovers live hosts on a network using system ping. Supports CIDR input via `--network` argument, stores results in a dictionary, and prints a summary.
 
+- **TCP port scanner** – multi‑threaded scanner with custom port lists, adjustable thread count, and CSV export.
+
 
 ## Installation
 
@@ -92,7 +94,7 @@ For quick one‑off calculations, use CLI mode:
 python -m src.subnet_calculator 192.0.2.15/24
 ```
 
-## TCP Client (Safe Local Test)
+### TCP Client (Safe Local Test)
 To observe a three‑way handshake locally:
 
 1. Start a simple HTTP server: `python -m http.server 8000`
@@ -110,23 +112,128 @@ python -m src.scanners.ping_sweeper
 
 By default, the script scans `192.168.1.0/24`. To scan a different network, modify the network_str variable in the main() function. Output shows live hosts with a real‑time progress percentage.
 
-## Testing the Tools
-Each module includes a self-test when run directly. For example:
+### TCP Port Scanner
+Scan a target for open TCP ports using a multi‑threaded connect scanner.
 
 ```bash
-# Test binary conversion utilities
-python src/ip_utils.py
-# Expected output: 192 -> 11000000 -> 192
+# Scan with default common ports (50 threads)
+python -m src.scanners.port_scanner 192.168.1.1
 
-# Start the interactive subnet calculator
-python src/subnet_calculator.py
+# Scan with custom ports and 100 threads
+python -m src.scanners.port_scanner scanme.nmap.org -p 22,80,443,8080 -t 100
 
-# Test TCP client (requires local server on port 8000)
-python src/tcp_client.py
-# Expected output: [*] Connecting to 127.0.0.1:8000... 
-# [+] Success. Received X bytes.
+# Scan and save results to CSV
+python -m src.scanners.port_scanner 10.0.0.1 -o results.csv
+```
 
-python src/scanners/ping_sweeper.py --network 192.168.1.0/24
+
+## Testing the Tools
+
+Each module includes a self-test or can be run directly to verify functionality. Run these commands from the project root (`Network_Toolkit/`).
+
+---
+
+### Binary Conversion Utilities
+```bash
+python -m src.ip_utils
+```
+
+**Expected output:**
+```
+192 -> 11000000 -> 192
+```
+
+---
+
+### Interactive Subnet Calculator
+```bash
+python -m src.subnet_calculator
+```
+
+Then follow the prompts. Example session:
+
+```
+=== Advanced Subnet Calculator ===
+Enter target network: 192.0.2.15/24
+
+Results for 192.0.2.15 / 255.255.255.0:
+    Network address:   192.0.2.0
+    Broadcast address: 192.0.2.255
+    First usable host: 192.0.2.1
+    Last usable host:  192.0.2.254
+    Usable hosts:      254
+```
+
+---
+
+### TCP Client (Requires Local HTTP Server)
+
+First, start a local server:
+
+```bash
+python -m http.server 8000
+```
+
+Then, in another terminal, run the client:
+
+```bash
+python -m src.tcp_client
+```
+
+**Expected output (snippet):**
+
+```
+[*] Connecting to 127.0.0.1:8000...
+[+] Success. Received X bytes.
+Response snippet: <!DOCTYPE HTML>...
+```
+
+---
+
+### Ping Sweeper
+
+```bash
+python -m src.scanners.ping_sweeper --network 192.168.1.0/28
+```
+
+Scans a small network (adjust to your own range).
+
+Example output:
+
+```
+[*] Scanning 192.168.1.0/28 from a Windows machine...
+
+[*] Progress: 14/14 (100.0%)
+[+] 192.168.1.1 is UP
+
+[*] Scan complete. 1 hosts up, 13 hosts down.
+```
+
+---
+
+### TCP Port Scanner
+
+```bash
+python -m src.scanners.port_scanner scanme.nmap.org -p 22,80,443
+```
+
+**Expected output:**
+
+```
+[*] Scanning scanme.nmap.org at 2026-02-25 15:30:00
+[*] Ports to scan: [22, 80, 443]
+[*] Using 50 threads
+
+[+] Port 22 is OPEN
+[+] Port 80 is OPEN
+
+[*] Scan completed. Open ports: [22, 80]
+```
+
+For CSV output, add:
+
+```bash
+-o results.csv
 ```
 
 ### You can also write your own test scripts using the imported functions – they’re designed to be reusable and reliable.

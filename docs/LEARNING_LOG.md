@@ -537,3 +537,60 @@ interface g0/0.20
 ### Screenshots![VLAN Topology](images/vlans_topology.png)
 ![Ping within VLAN 10 before routing](images/vlan_before_routing.png)
 ![Cross‑VLAN ping after router](images/vlan_after_routing.png)
+
+## [2026-02-25] – Day 11: Threaded Port Scanner, Static Routing Lab
+
+### Concepts Mastered
+- **Multithreaded TCP Port Scanning:**  
+  - Sequential scanning with `connect_ex()` and 1‑second timeout.  
+  - Upgraded to concurrent workers using `threading` and `queue.Queue`, achieving ~10× speedup.  
+  - Added adjustable thread count (`-t`) and CSV export (`-o`) for professional reporting.  
+  - Observed that filtered ports (no response) are valid intelligence – firewalls may silently drop probes.
+- **Limoncelli Chapter 5 – Services:**  
+  - **Customer Requirements:** Services must meet user expectations for availability, performance, and capacity.  
+  - **Reliability:** Designing redundancy and failover mechanisms.  
+  - **Monitoring:** Proactive observation through metrics, alerts, and logs.
+- **Limoncelli Chapter 9 – Documentation:**  
+  - **What to Document:** Network diagrams, IP allocations, configuration baselines, change logs.  
+  - **Checklists:** Essential for repeatable tasks (e.g., router configuration, incident response).  
+  - **Wiki Systems:** Centralised knowledge base for team collaboration.
+- **Static Routing with VLSM (Review):**  
+  - Rebuilt the three‑router chain (R1–R2–R3) using documentation prefixes (`192.0.2.0/24`, `198.51.100.0/30`, `203.0.113.0/30`).  
+  - Reinforced static route syntax and next‑hop selection.  
+  - Observed ARP causing first‑ping timeout – normal behaviour across multiple links.  
+  - Used this repetition to solidify configuration steps and troubleshoot any lingering doubts.
+
+### Artifacts Created / Updated
+- `src/scanners/port_scanner.py` – evolved in two commits:  
+  1. Basic sequential version with argparse and common ports.  
+  2. Enhanced version with multithreading, adjustable thread count, and CSV export.
+- **Packet Tracer static routing lab** (repeated for reinforcement):  
+  - Updated screenshots saved in `docs/images/`:  
+    - ![Static Routing Topology](images/static_routing_topology_day11.png)  
+    - ![Ping from PC0 to PC1](images/static_routing_ping_day11.png) (shows ARP timeout then success)
+
+### Reflection
+- **Port Scanner Evolution:**  
+  The jump from sequential to threaded scanning was dramatic – 20 ports in ~20 seconds vs ~2 seconds with 50 threads. The queue ensures thread‑safe task distribution, and the CSV export makes the tool immediately useful for penetration test reports. Testing on `scanme.nmap.org` confirmed open ports 22 and 80; scanning my home router revealed its admin interface.  
+- **Limoncelli Takeaways:**  
+  Chapter 5 reinforced that technology must align with user needs; monitoring is not optional. Chapter 9 validated my own documentation habits – this learning log, network diagrams, and checklists are exactly what he advocates.  
+- **Static Routing Lab (Redo):**  
+  Revisiting the lab gave me confidence. The first attempt had minor typos; this time I nailed it. The ARP behaviour is now intuitive – I expect the first ping to drop, and I know why. 
+
+### Evidence
+- **Commits:**
+  - `Add TCP port scanner with argparse and common ports`
+  - `feat: upgrade port scanner with multithreading and CSV export support`
+- **Port Scanner Sample Run:**
+```
+$ python src/scanners/port_scanner.py scanme.nmap.org -p 22,80,443 -t 50 -o results.csv
+[*] Scanning scanme.nmap.org at 2026-02-25 15:30:00
+[*] Ports to scan: [22, 80, 443]
+[*] Using 50 threads
+
+[+] Port 22 is OPEN
+[+] Port 80 is OPEN
+
+[] Scan completed. Open ports: [22, 80]
+[] results saved to results.csv
+```
