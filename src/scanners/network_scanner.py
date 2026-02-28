@@ -2,15 +2,20 @@
 # Project: Network Toolkit
 # Purpose: Integrated scanner combining ping sweep and threaded port scan.
 # Created: 2026-02-27
+# Updated: 2026-02-28 (added JSON export, error handling, versioning)
 
 """
 Integrated Network Scanner Module.
 We implement a master script that imports our ping sweeper and port scanner modules.
+We now support robust error handlind and structured JSON output for reporting.
 """
 
 import argparse
 import sys
+import json
 from datetime import datetime
+
+__version__ = "1.0.0"
 
 # We import the core functions from out custom toolkit modules
 from .ping_sweeper import ping_sweep
@@ -35,32 +40,60 @@ def main():
     parser.add_argument('-t', '--threads', type=int, default=50,
                         help='Number of concurrent threads for port scanning')
     parser.add_argument('-o', '--output', help='Output CSV file for port scan results')
+    parser.add_argument('--version', action='version', version=f'network_scanner.py {__version__}')
+    parser.add_argument('-j', '--json', metavar='FILE', help='Output results to JSON file')
     args = parser.parse_args()
 
-    print(f"[*] Starting integrated scan at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    live_hosts = []
+    try:
+        print(f"[*] Starting integrated scan at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        scan_results = {
+            "target": args.target,
+            "timestamp": datetime.now().isoformat(),
+            "mode": args.mode,
+            "live_hosts": [],
+            "port_scans": {}
+        }
+        live_hosts = []
 
-    if args.mode in ('ping', 'both'):
-        print(f"\n[*] Commencing ping sweep of {args.target} ...")
-        live_hosts = ping_sweep(args.target)
-        if not live_hosts:
-            print("[!] No live hosts discovered.")
-            if args.mode == 'ping':
-                return
+        if args.mode in ('ping', 'both'):
+            print(f"\n[*] Commencing ping sweep of {args.target} ...")
+            live_hosts = ping_sweep(args.target)
+            scan_results["live_hosts"] = live_hosts
+            if not live_hosts:
+                print("[!] No live hosts discovered.")
+                if args.mode == 'ping':
+                    return
             
-    if args.mode in ('port', 'both'):
-        ports_to_scan = parse_ports(args.ports)
-        hosts_to_scan = live_hosts if args.mode == 'both' else [args.target]
+        if args.mode in ('port', 'both'):
+            ports_to_scan = parse_ports(args.ports)
+            hosts_to_scan = live_hosts if args.mode == 'both' else [args.target]
 
-        for host in hosts_to_scan:
-            print(f"\n[*] Scanning {host} for open ports (Threads: {args.threads}) ...")
-            open_ports = scan_target(host, ports_to_scan, args.threads, args.output)
-            if open_ports:
-                print(f"[+] {host} open ports: {open_ports}")
-            else:
-                print(f"[-] {host}: No open ports found (or all filtered).")
+            for host in hosts_to_scan:
+                print(f"\n[*] Scanning {host} for open ports (Threads: {args.threads}) ...")
+                open_ports = scan_target(host, ports_to_scan, args.threads, args.output)
+                scan_results["port_scans"][host] = open_ports
+                if open_ports:
+                    print(f"[+] {host} open ports: {open_ports}")
+                else:
+                    print(f"[-] {host}: No open ports found (or all filtered).")
 
-    print(f"\n[*] Integrated scan completed at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"\n[*] Integrated scan completed at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+        if args.json:
+            try:
+                with open(args.json, 'w') as f:
+                    json.dump(scan_results, f, indent=4)
+                print(f"[*] JSON results saved to {args.json}")
+            except Exception as e:
+                print(f"[!] Failed to write JSON: {e}")
+
+    except KeyboardInterrupt:
+        print("\n[!] Scan interrupted by user.")
+        sys.exit(0)
+    except ValueError as e:
+        print(f"\n [!] Input error: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
