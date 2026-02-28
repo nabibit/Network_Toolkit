@@ -229,3 +229,6 @@ Thumbs.db
 # Project specific
 *.pcap
 *.log
+
+# Ignore generated CSV results
+results.csv
