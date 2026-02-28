@@ -14,7 +14,7 @@ Support both dotted-decimal and CIDR notation.
 """
 import argparse
 import sys
-from ip_utils import network_address, broadcast_address, host_count, bin_to_dec
+from src.utils.ip_utils import network_address, broadcast_address, host_count, bin_to_dec
 
 def parse_cidr(cidr: str) -> tuple[str, str]:
     """

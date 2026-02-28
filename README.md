@@ -9,9 +9,13 @@ A collection of Python utilities for network engineers and security students, bu
   - [As a Python Library](#as-a-python-library)
   - [Advanced Subnet Calculator](#advanced-subnet-calculator)
   - [TCP Client (Safe Local Test)](#tcp-client-safe-local-test)
+  - [Ping Sweeper](#ping-sweeper)
+  - [TCP Port Scanner](#tcp-port-scanner)
+  - [Integrated Network Scanner](#integrated-network-scanner)
 - [Testing the Tools](#testing-the-tools)
 - [Documentation](#documentation)
 - [Week 1 Summary](#week-1-summary)
+- [Week 2 Summary](#week-2-summary)
 - [Acknowledgements](#acknowledgements)
 
 ## Current Features
@@ -40,7 +44,7 @@ pip install -r requirements.txt
 Import the functions you need from `src.ip_utils`:
 
 ```python
-from src.ip_utils import (
+from src.utils.ip_utils import (
     dec_to_bin,
     bin_to_dec,
     ip_to_bin,
@@ -72,13 +76,15 @@ print(f"Usable hosts: {hosts}") # Usable hosts: 254
 **Interactive mode:** start the tool, then enter networks at the prompt:
 
 ```bash
-python -m src.subnet_calculator
+python -m src.basics.subnet_calculator
 ```
 Supports dotted notation (e.g., 192.0.2.15 255.255.255.0) or CIDR notation (e.g., 192.0.2.15/24) input.
 
-CLI mode: calculate in one line:
+CLI mode: 
+
+calculate in one line:
 ```bash
-python -m src.subnet_calculator 192.0.2.15/24
+python -m src.basics.subnet_calculator 192.0.2.15/24
 ```
 Example interactive session:
 ```
@@ -98,7 +104,7 @@ To observe a three‑way handshake locally:
 
 1. Start a simple HTTP server: `python -m http.server 8000`
 
-2. In another terminal, run: `python -m src.tcp_client`
+2. In another terminal, run: `python -m src.basics.tcp_client`
 
 3. Capture the loopback interface in Wireshark to see the handshake.
 
@@ -134,8 +140,8 @@ python -m src.scanners.network_scanner 192.168.1.0/28 --mode ping
 # Port scan a single IP (with threading and CSV output)
 python -m src.scanners.network_scanner scanme.nmap.org --mode port -p 22,80,443 -t 50 -o results.csv
 
-# Both: ping sweep then port scan each live host
-python -m src.scanners.network_scanner 192.168.1.0/24 --mode both -p 22,80,443 -t 50
+# Both: ping sweep then port scan each live host, save JSON
+python -m src.scanners.network_scanner 192.168.1.0/24 --mode both -p 22,80,443 -t 50 -j scan.json
 ```
 
 **Options:**
@@ -144,6 +150,7 @@ python -m src.scanners.network_scanner 192.168.1.0/24 --mode both -p 22,80,443 -
 - `-p, --ports` – Comma-separated list of ports (default: common ports list).
 - `-t, --threads` – Number of concurrent threads (default: 50).
 - `-o, --output` – Output CSV file name (optional, port mode only).
+- `-j, --json FILE` – Output results in JSON format to specified file.
 
 ---
 
@@ -173,7 +180,7 @@ python -m src.ip_utils
 
 ### Interactive Subnet Calculator
 ```bash
-python -m src.subnet_calculator
+python -m src.basics.subnet_calculator
 ```
 
 Then follow the prompts. Example session:
@@ -203,7 +210,7 @@ python -m http.server 8000
 Then, in another terminal, run the client:
 
 ```bash
-python -m src.tcp_client
+python -m src.basics.tcp_client
 ```
 
 **Expected output (snippet):**
@@ -281,7 +288,7 @@ python -m src.scanners.network_scanner 127.0.0.1/32 --mode ping
 You can also test full functionality:
 
 ```bash
-python -m src.scanners.network_scanner 127.0.0.1/32 --mode both -p 22,80,443 -t 50
+python -m src.scanners.network_scanner 127.0.0.1/32 --mode both -p 22,80,443 -t 50 -j test.json
 ```
 
 ### You can also write your own test scripts using the imported functions – they’re designed to be reusable and reliable.
@@ -293,9 +300,17 @@ See docs/LEARNING_LOG.md for the detailed engineering journal, including Packet 
 
 The log tracks daily progress, concepts, artifacts, and reflections – from binary conversion to static routing.
 
+---
+
 ## Week 1 Summary
 
 In Week 1, I built the foundation of my Network Toolkit. Starting from binary conversions, I developed a suite of subnet calculation tools, an interactive subnet calculator with CLI support, and a TCP client that demonstrates the three‑way handshake. Along the way, I reinforced theory with Packet Tracer labs (simple LAN, two subnets, static routing) and Wireshark captures (ARP, ICMP, TCP handshake). The learning log documents my daily progress, reflections, and evidence. This week established a solid understanding of networking fundamentals and Python automation – ready for Week 2's deeper dives into scanning and security tools.
+
+---
+
+## Week 2 Summary
+
+In Week 2, I moved from foundational theory to active network exploration and tool development. I built a cross‑platform ping sweeper with CIDR input and progress indicators, then evolved it into a multithreaded TCP port scanner with CSV export. The week's flagship achievement is the integrated network scanner (`network_scanner.py`), which combines ping sweep and port scan into one tool with `--mode` selection and JSON output. I also deepened my understanding of Nmap through hands‑on exploration of timing templates, OS detection, and the Nmap Scripting Engine (NSE). Throughout the week, I reinforced concepts with Packet Tracer labs (VLANs, static routing). The repository is now professionally structured with `utils/`, `basics/`, and `scanners/` subdirectories, and all tools are robustly tested against edge cases. This week transformed isolated scripts into a cohesive, production‑ready toolkit.
 
 ## Acknowledgements
 Built while studying *Computer Networking: A Top‑Down Approach* (Kurose & Ross), *Python Crash Course* (Matthes), *Practical Packet Analysis (3rd ed.)* (Chris Sanders), and *The Practice of System and Network Administration* (Limoncelli).

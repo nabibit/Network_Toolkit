@@ -779,3 +779,112 @@ $ python -m src.scanners.network_scanner scanme.nmap.org --mode port -p 22,80,44
 ```
 
 ---
+
+## [2026-02-28] – Day 14: Refactoring, Testing, and Polishing the Toolkit & Week 3 Prep
+
+### Concepts Mastered
+- **Repository Architecture:** Restructured the project by moving utility functions into `src/utils/` and foundational tools into `src/basics/`. This separation of concerns makes the toolkit scalable and professional.
+- **Import Path Management:** Updated import statements in `subnet_calculator.py` to `from src.utils.ip_utils import ...`, ensuring all modules work after relocation.
+- **Production-Ready Features:** Enhanced `network_scanner.py` with:
+  - JSON export (`-j`) for structured scan results.
+  - Global error handling (`try/except` around main logic) to gracefully handle invalid inputs, keyboard interrupts, and file write errors.
+  - `--version` flag for version tracking.
+- **Security Hygiene:** Added `*.json` and `*.csv` to `.gitignore` to prevent accidental exposure of scan data.
+
+### Artifacts Updated/Created
+- Moved `ip_utils.py` → `src/utils/ip_utils.py`
+- Moved `subnet_calculator.py` and `tcp_client.py` → `src/basics/`
+- Updated `subnet_calculator.py` import path.
+- Updated `network_scanner.py` with JSON output, error handling, and version flag.
+- Updated `.gitignore` to exclude scan output files.
+
+### Testing – Happy Path
+Ran all core tools with correct inputs to verify functionality:
+
+```powershell
+python -m src.utils.ip_utils                          # 192 -> 11000000 -> 192
+python -m src.basics.subnet_calculator 192.168.1.0/24 # correct subnet info
+python -m src.scanners.ping_sweeper -n 127.0.0.1/32   # localhost up
+python -m src.scanners.port_scanner 127.0.0.1 -p 135  # open port found
+python -m src.scanners.network_scanner 127.0.0.1/32 --mode both -j final_test.json
+python -m src.basics.tcp_client                        # requires local HTTP server
+```
+All returned expected results.
+
+
+### Testing – Edge Cases (Chaos Monkey)
+
+Intentionally fed invalid data to ensure robustness:
+
+- **Invalid CIDR:**  
+```bash
+subnet_calculator 192.168.1.0/99
+```  
+→ graceful error message.
+
+- **Missing CLI argument:**  
+```bash
+subnet_calculator 192.168.1.0
+```  
+→ reminder to use CIDR.
+
+- **No server for TCP client:**  
+```bash
+python -m src.basics.tcp_client
+```  
+→ "actively refused" error caught.
+
+- **Non-numeric port:**  
+```bash
+python -m src.scanners.network_scanner 192.168.1.0/24 --mode port -p 22,80,horse
+```  
+→ rejects with clear message.
+
+- **Bogus IP:**  
+```bash
+python -m src.scanners.network_scanner 999.999.999.999 --mode ping
+```  
+→ invalid network error.
+
+- **Invalid JSON path:**  
+```bash
+python -m src.scanners.network_scanner 127.0.0.1/32 --mode both -j Z:\fake_folder\scan.json
+```  
+→ scan still runs, JSON write error reported but does not crash.
+
+
+### Reflection
+
+The refactor turned a flat collection of scripts into a well-structured Python package, making future additions much easier.
+
+Testing edge cases revealed that error handling is solid – the tools fail gracefully and guide the user rather than dumping tracebacks.
+
+Adding JSON output to the integrated scanner makes it immediately useful for reporting and automation.
+
+The updated `.gitignore` ensures scan results remain private – a small but essential security practice.
+
+### Evidence
+
+**Commits:**
+
+```
+feat: add JSON export, global error handling, and version flag to integrated scanner
+
+chore: upgrade gitignore to use wildcards for all scan outputs
+```
+
+**JSON output sample (from `final_test.json`):**
+
+```json
+{
+  "target": "127.0.0.1/32",
+  "timestamp": "2026-02-28T20:15:36",
+  "mode": "both",
+  "live_hosts": ["127.0.0.1"],
+  "port_scans": {
+    "127.0.0.1": [135]
+  }
+}
+```
+
+---
