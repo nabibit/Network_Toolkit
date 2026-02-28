@@ -2,12 +2,13 @@
 # Project: Network Toolkit
 # Purpose: Ping sweep tool to discover live hosts on a network.
 # Created: 2026-02-22
-# Updated: 2026-02-24 (added argparse, down_count summary)
+# Updated: 2026-02-27 (refactored for modularity)
 # Complexity: O(n) where n is number of hosts scanned.
 
 """
-Ping sweeper that uses system ping to check host availability.
-Demonstrates network scanning fundamentals before introducing Scapy.
+Ping Sweeper Module.
+We use system ping to check host availability across a subnet.
+We refactored this module to expose ping_sweep() for integration into larger frameworks.
 Includes cross-platform support for Windows and Unix-like systems.
 """
 
@@ -15,7 +16,7 @@ import subprocess
 import ipaddress
 import platform
 import sys
-import argparse # Added to handle command-line arguments (e.g., --network)
+import argparse 
 
 def ping_host(ip: str | ipaddress.IPv4Address) -> bool:
     """
@@ -48,45 +49,45 @@ def ping_host(ip: str | ipaddress.IPv4Address) -> bool:
     except (subprocess.TimeoutExpired, Exception):
         return False
     
+def ping_sweep(network_str: str) -> list:
+    """
+    We perform a ping weep on a network and return a list of responsive IPs.
+    """
+    try:
+        network = ipaddress.ip_network(network_str, strict=False)
+    except ValueError as e:
+        print(f"[!] Invalid network: {e}")
+        sys.exit(1)
+
+    hosts = list(network.hosts())
+    total_hosts = len(hosts)
+    live_hosts = []
+    
+    for i, ip in enumerate(hosts, 1):
+        #  We utilize a carriage return (\r) to overwrite the current line, preventing terminal spam
+        sys.stdout.write(f"\r[*] Progress: {i}/ {total_hosts} ({(i/total_hosts)*100:.1f}%)")
+        sys.stdout.flush() # We force the terminal to update instantly
+
+        if ping_host(ip):
+            live_hosts.append(str(ip))
+            # We overwrite the progrss line with the hit, adding spaces to clear old text
+            sys.stdout.write(f"\r[+] {ip} is UP{' '*30}\n")
+
+    print(f"\n[*] Ping sweep complete. We found {len(live_hosts)} live hosts.")
+    return live_hosts
+
 def main():
-    # We initialize the ArgumentParser object to handle command-line inputs and build a help menu (-h)
+    # We intialize the argument parser for standalone CLI execution.
     parser = argparse.ArgumentParser(description="Ping sweep a network to find live hosts.")
     parser.add_argument('--network', '-n',
                         default='192.168.1.0/24',
                         help='Network range in CIDR notation (e.g., 192.168.1.0/24)')
     args = parser.parse_args()
 
-    try:
-        # We parse the input string into a network object, using the CLI argument
-        network = ipaddress.ip_network(args.network, strict=False)
-    except ValueError as e:
-        print(f"[!] Invalid network: {e}")
-        sys.exit(1)
-
     print(f"[*] Scanning {args.network} from a {platform.system()} machine...\n")
 
-    # We convert the generator to a list to ascertain the total number of target hosts
-    hosts = list(network.hosts())
-    total_hosts = len(hosts)
-
-    results = {}
-    for i, ip in enumerate(hosts, 1):
-        #  We utilize a carriage return (\r) to overwrite the current line, preventing terminal spam
-        sys.stdout.write(f"\r[*] Progress: {i}/ {total_hosts} ({(i/total_hosts)*100:.1f}%)")
-        sys.stdout.flush() # We force the terminal to update instantly
-
-        status = ping_host(ip)
-        results[str(ip)] = status
-
-        if status:
-            # We overwrite the progress line with the hit, adding spaces to clear old text
-            print(f"\n[+] {ip} is UP{' '*30}")
-
-    # We aggragate the results to calculate the total number of online and offline hosts
-    up_count = sum(1 for status in results.values() if status)
-    down_count = total_hosts - up_count
-    
-    print(f"\n[*] Scan complete. We discovered {up_count} hosts up, and {down_count} hosts down.")
+    # We call our newly extracted function.
+    ping_sweep(args.network)
 
 if __name__ == "__main__":
     main()

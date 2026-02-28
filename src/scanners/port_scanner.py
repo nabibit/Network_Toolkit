@@ -2,12 +2,14 @@
 # Project: Network Toolkit
 # Purpose: Multithreaded TCP port scanner with CSV export capabilities.
 # Created: 2026-02-25
+# Updated: 2026-02-27 (refactored for modularity)
 # Complexity: O(N/T) where N is ports and T is threads, Space O(N) for the queue.
 
 """
 Multithreaded TCP Port Scanner Module.
 We implement a threaded worker queue to scan target ports concurrently,
 drastically reducing scan times, and provide a CSV export for reporting.
+We refactored this to expose scan_target() for external integration.
 """
 
 import socket
@@ -61,6 +63,44 @@ def scan_worker(ip: str, port_queue: Queue, open_ports: List[int]) -> None:
         # We signal to the queue that the processing for this specific task is complete.
         port_queue.task_done()
     
+def scan_target(ip: str, port_list: List[int], threads: int = 50, output_file: str = None) -> List[int]:
+    """
+    We scan a single IP with given ports using multithreading.
+    We optionally write the results to a CSV file if requested.
+    """
+    port_queue= Queue()
+    for port in port_list:
+        port_queue.put(port)
+
+    open_ports = []
+    threads_list = []
+
+    # We spawn the required worker threads to process the queue
+    for _ in range(threads):
+        t = threading.Thread(target=scan_worker, args=(ip, port_queue, open_ports))
+        t.daemon = True
+        t.start()
+        threads_list.append(t)
+
+    # We block execution until all threads complete
+    port_queue.join()
+    open_ports.sort()
+
+    # We handle the CSV export if requested
+    if output_file:
+        try:
+            with open(output_file, 'w', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(['Target', 'Port', 'Status'])
+                for p in open_ports:
+                    writer.writerow([ip, p, 'OPEN'])
+            print(f"[*] Results saved to {output_file}")
+
+        except Exception as e:
+            print(f"[!] We encountered an error writing to CSV: {e}")
+
+    return open_ports
+
 # ---------------------------------------------------
 # Local Test Area & CLI
 if __name__ == "__main__":
@@ -86,37 +126,6 @@ if __name__ == "__main__":
     print(f"[*] Scanning {args.target} at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"[*] Ports to scan: {ports_to_scan}\n")
 
-    # We initialize the thread-safe queue and populate it with our target ports.
-    port_queue = Queue()
-    for port in ports_to_scan:
-        port_queue.put(port)
-
-    open_ports = []
-    threads = []
-
-    # We spawn the specified number of worker threads
-    for _ in range(args.threads):
-        t = threading.Thread(target=scan_worker, args=(args.target, port_queue, open_ports))
-        t.daemon = True
-        t.start()
-        threads.append(t)
-
-    # We block the main thread until the queue is completely empty
-    port_queue.join()
-
-    # We sort the final list so the output is sequentially redable
-    open_ports.sort()
-    print(f"\n[*] Scan completed. Open ports: {open_ports}")
-
-    # We handle the optional CSV export if requested by the user
-    if args.output:
-        try:
-            with open(args.output, mode='w', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(["Target", "Port", "Status"])
-                for p in open_ports:
-                    writer.writerow([args.target, p, "OPEN"])
-            print(f"[*] results saved to {args.output}")
-
-        except Exception as e:
-            print(f"[!] We encountered an error writing to CSV: {e}")
+    # We invoke the refactored function for standalone usage
+    found_ports = scan_target(args.target, ports_to_scan, args.threads, args.output)
+    print(f"\n[*] Scan completed. Open ports: {found_ports}")
