@@ -20,15 +20,10 @@ A collection of Python utilities for network engineers and security students, bu
 - **IP to binary** – `ip_to_bin()` converts dotted decimal to 32‑bit string.
 - **Subnet calculations** – `network_address()`, `broadcast_address()`, `host_count()`.
 - **Advanced subnet calculator** – interactive and CLI tool that accepts dotted or CIDR notation, outputs network, broadcast, first/last host, and total hosts.
-
 - **TCP client** – `fetch_http()` demonstrates raw socket programming and the three‑way handshake.
-
-- **Ping sweeper** – cross‑platform tool (`ping_sweeper.py`) to discover live hosts on a network. Includes live progress indicator and result storage.
-
-- **Ping sweeper** – `ping_sweeper.py` discovers live hosts on a network using system ping. Supports CIDR input via `--network` argument, stores results in a dictionary, and prints a summary.
-
+- **Ping sweeper** – cross‑platform tool (`ping_sweeper.py`) to discover live hosts on a network. Supports CIDR input via `--network`, includes live progress indicator, and stores results in a dictionary.
 - **TCP port scanner** – multi‑threaded scanner with custom port lists, adjustable thread count, and CSV export.
-
+- **Integrated network scanner** – combines ping sweep and threaded port scan (`network_scanner.py`) with `--mode` selection (ping/port/both). Automatically discovers live hosts and scans them for open ports.
 
 ## Installation
 
@@ -70,14 +65,22 @@ print(f"Network: {net}")        # Network: 192.168.1.0
 print(f"Broadcast: {bcast}")    # Broadcast: 192.168.1.255
 print(f"Usable hosts: {hosts}") # Usable hosts: 254
 ```
+
+
 ### Advanced Subnet Calculator
-Run interactively:
-```python
+
+**Interactive mode:** start the tool, then enter networks at the prompt:
+
+```bash
 python -m src.subnet_calculator
 ```
-Supports both dotted (e.g., `192.0.2.15 255.255.255.0`) and CIDR (e.g., `192.0.2.15/24`) input.
+Supports dotted notation (e.g., 192.0.2.15 255.255.255.0) or CIDR notation (e.g., 192.0.2.15/24) input.
 
-### Example session:
+CLI mode: calculate in one line:
+```bash
+python -m src.subnet_calculator 192.0.2.15/24
+```
+Example interactive session:
 ```
 === Advanced Subnet Calculator ===
 Enter target network: 192.0.2.15/24
@@ -88,10 +91,6 @@ Results for 192.0.2.15 / 255.255.255.0:
     First usable host: 192.0.2.1
     Last usable host:  192.0.2.254
     Usable hosts:      254
-```
-For quick one‑off calculations, use CLI mode:
-```python
-python -m src.subnet_calculator 192.0.2.15/24
 ```
 
 ### TCP Client (Safe Local Test)
@@ -106,11 +105,10 @@ To observe a three‑way handshake locally:
 ### Ping Sweeper
 Discover live hosts on a network using ICMP ping. Automatically detects your operating system and uses the correct ping flags.
 
+By default, the script scans `192.168.1.0/24`. Use the `--network` argument to scan a different range:
 ```bash
-python -m src.scanners.ping_sweeper
+python -m src.scanners.ping_sweeper --network 10.0.0.0/24
 ```
-
-By default, the script scans `192.168.1.0/24`. To scan a different network, modify the network_str variable in the main() function. Output shows live hosts with a real‑time progress percentage.
 
 ### TCP Port Scanner
 Scan a target for open TCP ports using a multi‑threaded connect scanner.
@@ -126,6 +124,34 @@ python -m src.scanners.port_scanner scanme.nmap.org -p 22,80,443,8080 -t 100
 python -m src.scanners.port_scanner 10.0.0.1 -o results.csv
 ```
 
+### Integrated Network Scanner
+Unifies ping sweep and port scan for automated network reconnaissance.
+
+```bash
+# Ping sweep only
+python -m src.scanners.network_scanner 192.168.1.0/28 --mode ping
+
+# Port scan a single IP (with threading and CSV output)
+python -m src.scanners.network_scanner scanme.nmap.org --mode port -p 22,80,443 -t 50 -o results.csv
+
+# Both: ping sweep then port scan each live host
+python -m src.scanners.network_scanner 192.168.1.0/24 --mode both -p 22,80,443 -t 50
+```
+
+**Options:**
+- `target` – IP address or network in CIDR notation (required).
+- `--mode` – `ping`, `port`, or `both` (default: `both`).
+- `-p, --ports` – Comma-separated list of ports (default: common ports list).
+- `-t, --threads` – Number of concurrent threads (default: 50).
+- `-o, --output` – Output CSV file name (optional, port mode only).
+
+---
+
+### Optional Quick Test
+```bash
+python -m src.scanners.network_scanner 127.0.0.1/32 --mode ping
+```
+Expected output shows localhost is up.
 
 ## Testing the Tools
 
@@ -191,7 +217,6 @@ Response snippet: <!DOCTYPE HTML>...
 ---
 
 ### Ping Sweeper
-
 ```bash
 python -m src.scanners.ping_sweeper --network 192.168.1.0/28
 ```
@@ -212,7 +237,6 @@ Example output:
 ---
 
 ### TCP Port Scanner
-
 ```bash
 python -m src.scanners.port_scanner scanme.nmap.org -p 22,80,443
 ```
@@ -234,6 +258,30 @@ For CSV output, add:
 
 ```bash
 -o results.csv
+```
+
+---
+
+### Integrated Network Scanner (Quick Test)
+```bash
+python -m src.scanners.network_scanner 127.0.0.1/32 --mode ping
+```
+
+**Expected output:**
+
+```
+[*] Starting integrated scan at 2026-02-27 15:30:00
+[*] Ping sweeping 127.0.0.1/32 ...
+[*] Progress: 1/1 (100.0%)
+[+] 127.0.0.1 is UP
+[*] Ping sweep complete. Found 1 live hosts.
+[*] Scan completed at 2026-02-27 15:30:02
+```
+
+You can also test full functionality:
+
+```bash
+python -m src.scanners.network_scanner 127.0.0.1/32 --mode both -p 22,80,443 -t 50
 ```
 
 ### You can also write your own test scripts using the imported functions – they’re designed to be reusable and reliable.

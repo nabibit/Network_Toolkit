@@ -723,3 +723,59 @@ The `whois-domain` script took over a minute – a reminder that some scans are 
 Commands executed and outputs documented above.
 
 ---
+
+## [2026-02-27] – Day 13: Integrated Network Scanner
+
+### Concepts Mastered
+- **Modular Refactoring:** Extracted core logic from `ping_sweeper.py` and `port_scanner.py` into reusable functions (`ping_sweep()` and `scan_target()`). This allows them to be imported and used by other tools while retaining standalone functionality.
+- **Integrated Scanning:** Built `network_scanner.py` that imports the refactored modules and chains them together – now a single command can ping-sweep a network, then automatically port-scan each live host with threading.
+- **CLI Design:** Used `argparse` with mode selection (`--mode ping/port/both`) to give users flexible control.
+
+---
+
+### Artifact
+- `src/scanners/network_scanner.py` – a master controller that can:
+  - Ping-sweep a target network (CIDR) and return live hosts.
+  - Port-scan a single IP with threading and CSV export.
+  - Combine both: discover live hosts then scan each for open ports.
+- Refactored `ping_sweeper.py` and `port_scanner.py` to expose reusable functions.
+
+---
+
+### Reflection
+- **Modularity Pays Off:** The refactoring took only a few minutes but turned two isolated scripts into a reusable library. Now any future tool can import `ping_sweep()` or `scan_target()` without copying code.
+- **Integrated Scanner Power:** Running `network_scanner.py 192.168.1.0/24 --mode both` now does in one command what previously required two separate tools. It feels like building a real product.
+
+---
+
+### Evidence
+- **Commits:**
+  - `refactor: extract core scanning logic into modular functions`
+  - `feat: create integrated network scanner to chain ping and port scans`
+- **Sample run (both mode on localhost):**
+```bash
+$ python -m src.scanners.network_scanner 127.0.0.1/32 --mode both -p 22,80,443 -t 50
+[*] Starting integrated scan at 2026-02-27 15:30:00
+
+[*] Ping sweeping 127.0.0.1/32 ...
+[*] Progress: 1/1 (100.0%)
+[+] 127.0.0.1 is UP
+[*] Ping sweep complete. Found 1 live hosts.
+
+[*] Scanning 127.0.0.1 for open ports (threads=50)...
+[*] Scan completed. Open ports: []
+
+[*] Scan completed at 2026-02-27 15:30:02
+```
+- **Test against a real target:**
+```bash
+$ python -m src.scanners.network_scanner scanme.nmap.org --mode port -p 22,80,443 -o results.csv
+[*] Starting integrated scan at 2026-02-27 15:35:00
+[*] Scanning scanme.nmap.org for open ports (threads=50)...
+[+] Port 22 is OPEN
+[+] Port 80 is OPEN
+[*] Scan completed. Open ports: [22, 80]
+[*] results saved to results.csv
+```
+
+---
