@@ -230,5 +230,6 @@ Thumbs.db
 *.pcap
 *.log
 
-# Ignore generated CSV results
-results.csv
+# Scan Outputs & Intelligence Reports
+*.json
+*.csv
