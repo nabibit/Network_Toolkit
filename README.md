@@ -1,5 +1,12 @@
 # Network Toolkit
 
+![Networking](https://img.shields.io/badge/Networking-IPv4_/_IPv6-blue)
+![Python](https://img.shields.io/badge/Python-3.8+-yellow)
+![Wireshark](https://img.shields.io/badge/Wireshark-Packet_Analysis-brightgreen)
+![Nmap](https://img.shields.io/badge/Nmap-Network_Scanning-red)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-orange)
+
 A collection of Python utilities for network engineers and security students, built as part of my self‑study for the cybersecurity market.
 
 ## Table of Contents
